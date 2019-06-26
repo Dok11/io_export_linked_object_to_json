@@ -24,6 +24,9 @@ def save_liked_data_to_json(context, filepath):
     json_data = []
     for item in bpy.data.objects:
         if item.type == 'EMPTY' and item.instance_type == 'COLLECTION':
+            asset_name = bpy.data.objects[item.name].instance_collection.name
+            asset_file_name = bpy.data.collections[asset_name].library.name_full
+
             data = {
                 'name': item.name,
                 'location': {
@@ -54,7 +57,8 @@ def save_liked_data_to_json(context, filepath):
                     'y': item.scale[1],
                     'z': item.scale[2],
                 },
-                'asset_name': bpy.data.objects[item.name].instance_collection.name,
+                'asset_name': asset_name,
+                'asset_file_name': asset_file_name.replace('.blend', ''),
             }
             json_data.append(data)
 
