@@ -6,20 +6,42 @@ from bpy.types import Operator
 from bpy_extras.io_utils import ExportHelper
 
 bl_info = {
-    "name": "Export Linked Objects to JSON",
-    "author": "Oleg Postoev",
-    "version": (0, 0, 1),
-    "blender": (2, 80, 0),
-    "location": "File > Export",
-    "description": "",
-    "warning": "",
-    "wiki_url": "",
-    "support": "COMMUNITY",
-    "category": "Import-Export",
+    'name': 'Export Linked Objects to JSON',
+    'author': 'Oleg Postoev',
+    'version': (0, 0, 1),
+    'blender': (2, 80, 0),
+    'location': 'File > Export',
+    'description': '',
+    'warning': '',
+    'wiki_url': '',
+    'support': 'COMMUNITY',
+    'category': 'Import-Export',
 }
 
 
+def truncate(n, decimals=0):
+    multiplier = 10 ** decimals
+    return int(n * multiplier) / multiplier
+
+
 def save_liked_data_to_json(context, filepath):
+    """
+    Function save data about linked objects into JSON as array of object with fields:
+        name
+        position
+        quaternion
+        scale
+        filename
+        parent
+        visible
+
+    :param context:
+    :param filepath:
+    :return:
+    """
+
+    print('running save_liked_data_to_json...')
+
     # Collect data into data_json
     json_data = []
     for item in bpy.data.objects:
@@ -29,58 +51,62 @@ def save_liked_data_to_json(context, filepath):
 
             data = {
                 'name': item.name,
-                'location': {
-                    'x': item.location[0],
-                    'y': item.location[1],
-                    'z': item.location[2],
+                'position': {
+                    'x': truncate(item.location[0], 1),
+                    'y': truncate(item.location[1], 1),
+                    'z': truncate(item.location[2], 1),
                 },
-                'rotation_quaternion': {
-                    'w': item.rotation_quaternion[0],
-                    'x': item.rotation_quaternion[1],
-                    'y': item.rotation_quaternion[2],
-                    'z': item.rotation_quaternion[3],
+                'quaternion': {
+                    'w': truncate(item.rotation_quaternion[0], 2),
+                    'x': truncate(item.rotation_quaternion[1], 2),
+                    'y': truncate(item.rotation_quaternion[2], 2),
+                    'z': truncate(item.rotation_quaternion[3], 2),
                 },
                 'rotation_axis_angle': {
-                    'w': item.rotation_axis_angle[0],
-                    'x': item.rotation_axis_angle[1],
-                    'y': item.rotation_axis_angle[2],
-                    'z': item.rotation_axis_angle[3],
+                    'w': truncate(item.rotation_axis_angle[0], 2),
+                    'x': truncate(item.rotation_axis_angle[1], 2),
+                    'y': truncate(item.rotation_axis_angle[2], 2),
+                    'z': truncate(item.rotation_axis_angle[3], 2),
                 },
                 'rotation_euler': {
-                    'x': item.rotation_euler[0],
-                    'y': item.rotation_euler[1],
-                    'z': item.rotation_euler[2],
+                    'x': truncate(item.rotation_euler[0], 2),
+                    'y': truncate(item.rotation_euler[1], 2),
+                    'z': truncate(item.rotation_euler[2], 2),
                 },
                 'rotation_mode': item.rotation_mode,
                 'scale': {
-                    'x': item.scale[0],
-                    'y': item.scale[1],
-                    'z': item.scale[2],
+                    'x': truncate(item.scale[0], 2),
+                    'y': truncate(item.scale[1], 2),
+                    'z': truncate(item.scale[2], 2),
                 },
-                'asset_name': asset_name,
-                'asset_file_name': asset_file_name.replace('.blend', ''),
+                'parent': asset_name,
+                'filename': asset_file_name.replace('.blend', ''),
+                'visible': not (item.hide_viewport or item.hide_render),
             }
             json_data.append(data)
 
+    print('json_data')
+    print(json_data)
+
     # Save data
-    print("running save_liked_data_to_json...")
     f = open(filepath, 'w', encoding='utf-8')
     json.dump(json_data, f, ensure_ascii=False, indent=2)
     f.close()
 
+    print('Saved file: ' + filepath)
     return {'FINISHED'}
 
 
 class ExportLinkedObjects(Operator, ExportHelper):
     """This appears in the tooltip of the operator and in the generated docs"""
-    bl_idname = "export_linked_objects.data"
-    bl_label = "Export to JSON"
+    bl_idname = 'export_linked_objects.data'
+    bl_label = 'Export to JSON'
 
     # ExportHelper mixin class uses this
-    filename_ext = ".json"
+    filename_ext = '.json'
 
     filter_glob: StringProperty(
-        default="*.json",
+        default='*.json',
         options={'HIDDEN'},
         maxlen=255,
     )
@@ -91,7 +117,7 @@ class ExportLinkedObjects(Operator, ExportHelper):
 
 # Only needed if you want to add into a dynamic menu
 def menu_func_export(self, context):
-    self.layout.operator(ExportLinkedObjects.bl_idname, text="Export Linked Objects to JSON")
+    self.layout.operator(ExportLinkedObjects.bl_idname, text='Export Linked Objects to JSON')
 
 
 def register():
@@ -105,5 +131,5 @@ def unregister():
     bpy.types.TOPBAR_MT_file_export.remove(menu_func_export)
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     register()
