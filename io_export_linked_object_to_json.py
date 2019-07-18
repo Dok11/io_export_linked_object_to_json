@@ -8,7 +8,7 @@ from bpy_extras.io_utils import ExportHelper
 bl_info = {
     'name': 'Export Linked Objects to JSON',
     'author': 'Oleg Postoev',
-    'version': (0, 0, 1),
+    'version': (0, 0, 2),
     'blender': (2, 80, 0),
     'location': 'File > Export',
     'description': '',
@@ -47,43 +47,38 @@ def save_liked_data_to_json(context, filepath):
     for item in bpy.data.objects:
         if item.type == 'EMPTY' and item.instance_type == 'COLLECTION':
             asset_name = bpy.data.objects[item.name].instance_collection.name
+            print('asset_name is', asset_name)
+
             asset_file_name = bpy.data.collections[asset_name].library.name_full
+
+            item_rotation_mode = item.rotation_mode
+            item.rotation_mode = 'QUATERNION'
 
             data = {
                 'name': item.name,
                 'position': {
-                    'x': truncate(item.location[0], 1),
-                    'y': truncate(item.location[1], 1),
-                    'z': truncate(item.location[2], 1),
+                    'x': truncate(item.location.x, 1),
+                    'y': truncate(item.location.y, 1),
+                    'z': truncate(item.location.z, 1),
                 },
                 'quaternion': {
-                    'w': truncate(item.rotation_quaternion[0], 2),
-                    'x': truncate(item.rotation_quaternion[1], 2),
-                    'y': truncate(item.rotation_quaternion[2], 2),
-                    'z': truncate(item.rotation_quaternion[3], 2),
+                    'w': truncate(item.rotation_quaternion.w, 3),
+                    'x': truncate(item.rotation_quaternion.x, 3),
+                    'y': truncate(item.rotation_quaternion.y, 3),
+                    'z': truncate(item.rotation_quaternion.z, 3),
                 },
-                'rotation_axis_angle': {
-                    'w': truncate(item.rotation_axis_angle[0], 2),
-                    'x': truncate(item.rotation_axis_angle[1], 2),
-                    'y': truncate(item.rotation_axis_angle[2], 2),
-                    'z': truncate(item.rotation_axis_angle[3], 2),
-                },
-                'rotation_euler': {
-                    'x': truncate(item.rotation_euler[0], 2),
-                    'y': truncate(item.rotation_euler[1], 2),
-                    'z': truncate(item.rotation_euler[2], 2),
-                },
-                'rotation_mode': item.rotation_mode,
                 'scale': {
-                    'x': truncate(item.scale[0], 2),
-                    'y': truncate(item.scale[1], 2),
-                    'z': truncate(item.scale[2], 2),
+                    'x': truncate(item.scale.x, 2),
+                    'y': truncate(item.scale.y, 2),
+                    'z': truncate(item.scale.z, 2),
                 },
                 'parent': asset_name,
                 'filename': asset_file_name.replace('.blend', ''),
                 'visible': not (item.hide_viewport or item.hide_render),
             }
             json_data.append(data)
+
+            item.rotation_mode = item_rotation_mode
 
     print('json_data')
     print(json_data)
