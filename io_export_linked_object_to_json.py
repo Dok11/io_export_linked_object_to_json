@@ -4,6 +4,7 @@ import bpy
 from bpy.props import StringProperty
 from bpy.types import Operator
 from bpy_extras.io_utils import ExportHelper
+from mathutils import Quaternion
 
 bl_info = {
     'name': 'Export Linked Objects to JSON',
@@ -54,6 +55,9 @@ def save_liked_data_to_json(context, filepath):
             item_rotation_mode = item.rotation_mode
             item.rotation_mode = 'QUATERNION'
 
+            rot = item.rotation_quaternion
+            quaternion = Quaternion((rot[0], rot[1], rot[3], -rot[2]))
+
             data = {
                 'name': item.name,
                 'position': {
@@ -62,10 +66,10 @@ def save_liked_data_to_json(context, filepath):
                     'z': truncate(item.location.z, 1),
                 },
                 'quaternion': {
-                    'w': truncate(item.rotation_quaternion.w, 3),
-                    'x': truncate(item.rotation_quaternion.x, 3),
-                    'y': truncate(item.rotation_quaternion.y, 3),
-                    'z': truncate(item.rotation_quaternion.z, 3),
+                    'w': truncate(quaternion.w, 3),
+                    'x': truncate(quaternion.x, 3),
+                    'y': truncate(quaternion.y, 3),
+                    'z': truncate(quaternion.z, 3),
                 },
                 'scale': {
                     'x': truncate(item.scale.x, 2),
