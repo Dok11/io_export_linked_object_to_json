@@ -61,20 +61,20 @@ def save_liked_data_to_json(context, filepath):
             data = {
                 'name': item.name,
                 'position': {
-                    'x': truncate(item.location.x, 1),
-                    'y': truncate(item.location.y, 1),
-                    'z': truncate(item.location.z, 1),
+                    'x': truncate(-item.location.x, 1),
+                    'y': truncate(item.location.z, 1),
+                    'z': truncate(item.location.y, 1),
                 },
                 'quaternion': {
                     'w': truncate(quaternion.w, 3),
-                    'x': truncate(quaternion.x, 3),
+                    'x': truncate(-quaternion.x, 3),
                     'y': truncate(quaternion.y, 3),
-                    'z': truncate(quaternion.z, 3),
+                    'z': truncate(-quaternion.z, 3),
                 },
                 'scale': {
-                    'x': truncate(item.scale.x, 2),
-                    'y': truncate(item.scale.y, 2),
-                    'z': truncate(item.scale.z, 2),
+                    'x': truncate(-item.scale.x, 2),
+                    'y': truncate(item.scale.z, 2),
+                    'z': truncate(-item.scale.y, 2),
                 },
                 'parent': asset_name,
                 'filename': asset_file_name.replace('.blend', ''),
