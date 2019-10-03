@@ -4,12 +4,11 @@ import bpy
 from bpy.props import StringProperty
 from bpy.types import Operator
 from bpy_extras.io_utils import ExportHelper
-from mathutils import Quaternion
 
 bl_info = {
     'name': 'Export Linked Objects to JSON',
     'author': 'Oleg Postoev',
-    'version': (0, 0, 2),
+    'version': (0, 0, 3),
     'blender': (2, 80, 0),
     'location': 'File > Export',
     'description': '',
@@ -52,12 +51,10 @@ def save_liked_data_to_json(context, filepath):
 
             asset_file_name = bpy.data.collections[asset_name].library.name_full
 
-            item_rotation_mode = item.rotation_mode
-            item.rotation_mode = 'QUATERNION'
+            # rotation
+            quaternion = item.rotation_euler.to_quaternion()
 
-            rot = item.rotation_quaternion
-            quaternion = Quaternion((rot[0], rot[1], rot[3], -rot[2]))
-
+            # collect all data
             data = {
                 'name': item.name,
                 'position': {
@@ -78,11 +75,9 @@ def save_liked_data_to_json(context, filepath):
                 },
                 'parent': asset_name,
                 'filename': asset_file_name.replace('.blend', ''),
-                'visible': not (item.hide_viewport or item.hide_render),
+                'visible': not (item.hide_viewport),
             }
             json_data.append(data)
-
-            item.rotation_mode = item_rotation_mode
 
     print('json_data')
     print(json_data)
